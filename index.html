@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Humana - Passo a Passo</title>
+    <style>
+        :root {
+            --bg-color: #0f0f11;
+            --card-bg: #18181c;
+            --box-bg: #202024;
+            --text-main: #e1e1e6;
+            --text-muted: #a8a8b3;
+            --accent: #90caf9;
+            --border: #29292e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            margin-top: 20px;
+        }
+
+        h1 {
+            color: var(--accent);
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        input, select, button {
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--box-bg);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input {
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Remove setas padrão do input number */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        select {
+            width: 80px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button {
+            background: var(--box-bg);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        button:hover {
+            background: var(--accent);
+            color: var(--bg-color);
+        }
+
+        .output-area {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .output-header {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .terminal-box {
+            background-color: #121214;
+            border-radius: 8px;
+            padding: 24px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre;
+            overflow-x: auto;
+            line-height: 1.6;
+            color: #ffffff;
+            border: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Calculadora Passo a Passo</h1>
+        <p class="subtitle">Operações armadas e resolvidas como no papel</p>
+        
+        <div class="input-row">
+            <input type="number" id="num1" placeholder="Ex: 58" value="58">
+            <select id="op">
+                <option value="+">+</option>
+                <option value="-">-</option>
+                <option value="*">×</option>
+                <option value="/">÷</option>
+            </select>
+            <input type="number" id="num2" placeholder="Ex: 27" value="27">
+        </div>
+        
+        <button style="width: 100%;" onclick="gerarCalculo()">Calcular Passo a Passo</button>
+
+        <div class="output-area" id="outputArea">
+            <div class="output-header">Plain text</div>
+            <div class="terminal-box" id="terminal"></div>
+        </div>
+    </div>
+
+    <script>
+        function gerarCalculo() {
+            const val1 = document.getElementById('num1').value.trim();
+            const val2 = document.getElementById('num2').value.trim();
+            const op = document.getElementById('op').value;
+            const terminal = document.getElementById('terminal');
+            const outputArea = document.getElementById('outputArea');
+
+            if (!val1 || !val2) {
+                alert("Por favor, digite os dois números.");
+                return;
+            }
+
+            const n1 = parseInt(val1);
+            const n2 = parseInt(val2);
+
+            if (isNaN(n1) || isNaN(n2) || n1 < 0 || n2 < 0) {
+                alert("Para manter a estrutura visual escolar, use apenas números inteiros e positivos.");
+                return;
+            }
+
+            let log = "";
+
+            if (op === "+") log = rodarAdicao(n1, n2);
+            else if (op === "-") log = rodarSubtracao(n1, n2);
+            else if (op === "*") log = rodarMultiplicacao(n1, n2);
+            else if (op === "/") log = rodarDivisao(n1, n2);
+
+            terminal.textContent = log;
+            outputArea.style.display = "block";
+        }
+
+        function rodarAdicao(n1, n2) {
+            let s1 = n1.toString();
+            let s2 = n2.toString();
+            let maxLen = Math.max(s1.length, s2.length);
+            
+            let p1Armada = s1.padStart(maxLen + 2, ' ');
+            let p2Armada = "+" + s2.padStart(maxLen + 1, ' ');
+            let linha = "-".repeat(maxLen + 2);
+            
+            let vaiUm = 0;
+            let passosTxt = "";
+            let historicoArmado = "";
+
+            historicoArmado += `${p1Armada}\n${p2Armada}\n${linha}\n\n`;
+
+            let arr1 = s1.split('').reverse();
+            let arr2 = s2.split('').reverse();
+            let listaVaiUm = Array(maxLen + 1).fill(0);
+            let resultadoArr = [];
+
+            for (let i = 0; i < maxLen; i++) {
+                let d1 = parseInt(arr1[i] || 0);
+                let d2 = parseInt(arr2[i] || 0);
+                let somaColuna = d1 + d2 + vaiUm;
+                
+                passosTxt += `Passo ${i + 1}:\n`;
+                if (vaiUm > 0) {
+                    passosTxt += `${vaiUm} (que foi levado) + ${d1} + ${d2} = ${somaColuna}\n\n`;
+                } else {
+                    passosTxt += `${d1} + ${d2} = ${somaColuna}\n\n`;
+                }
+
+                let digitoAtual = somaColuna % 10;
+                vaiUm = Math.floor(somaColuna / 10);
+                listaVaiUm[i + 1] = vaiUm;
+                resultadoArr.unshift(digitoAtual);
+
+                if (vaiUm > 0 && i < maxLen - 1) {
+                    passosTxt += `Escrevemos o ${digitoAtual}.\nLevamos o ${vaiUm} para a próxima coluna.\n\n`;
+                } else if (vaiUm > 0 && i === maxLen - 1) {
+                    resultadoArr.unshift(vaiUm);
+                    passosTxt += `Escrevemos o ${somaColuna} final na frente.\n\n`;
+                } else {
+                    passosTxt += `Escrevemos o ${digitoAtual}.\n\n`;
+                }
+
+                let topoVaiUm = "";
+                for (let k = maxLen; k >= 0; k--) {
+                    topoVaiUm += (listaVaiUm[k] > 0 ? listaVaiUm[k] : " ");
+                }
+                
+                let resParcialStr = resultadoArr.join('').padStart(maxLen + 2, ' ');
+                historicoArmado += `${topoVaiUm.trimEnd().padStart(maxLen + 2, ' ')}\n${p1Armada}\n${p2Armada}\n${linha}\n${resParcialStr}\n\n`;
+            }
+
+            let total = n1 + n2;
+            return `${historicoArmado}${passosTxt}Resultado = ${total}`;
+        }
+
+        function rodarSubtracao(n1, n2) {
+            if (n2 > n1) {
+                return `Conta Armada: ${n1} - ${n2}\n\nPara manter o formato escolar clássico, digite o número maior primeiro.\n(Dica: O resultado real seria negativo: ${n1 - n2})`;
+            }
+
+            let s1 = n1.toString();
+            let s2 = n2.toString();
+            let maxLen = s1.length;
+
+            let p1Armada = s1.padStart(maxLen + 2, ' ');
+            let p2Armada = "-" + s2.padStart(maxLen + 1, ' ');
+            let linha = "-".repeat(maxLen + 2);
+
+            let arr1 = s1.split('').reverse().map(Number);
+            let arr2 = s2.split('').reverse().map(Number);
+            let resultadoArr = [];
+            let passosTxt = "";
+
+            for (let i = 0; i < maxLen; i++) {
+                let d1 = arr1[i];
+                let d2 = arr2[i] || 0;
+
+                passosTxt += `Passo ${i + 1}:\n`;
+
+                if (d1 < d2) {
+                    passosTxt += `${d1} é menor que ${d2}, pegamos emprestado da coluna da esquerda.\n`;
+                    arr1[i + 1] -= 1; 
+                    d1 += 10;
+                    passosTxt += `O vizinho cede 1. A coluna atual vira ${d1}.\n`;
+                    passosTxt += `${d1} - ${d2} = ${d1 - d2}\n`;
+                } else {
+                    passosTxt += `${d1} - ${d2} = ${d1 - d2}\n`;
+                }
+
+                let sub = d1 - d2;
+                resultadoArr.unshift(sub);
+                passosTxt += `Escrevemos o ${sub}.\n\n`;
+            }
+
+            let resFinal = resultadoArr.join('').replace(/^0+/, '') || "0";
+            let displayConta = `${p1Armada}\n${p2Armada}\n${linha}\n${resFinal.padStart(maxLen + 2, ' ')}\n\n`;
+            
+            return `${displayConta}${passosTxt}Resultado = ${resFinal}`;
+        }
+
+        function rodarMultiplicacao(n1, n2) {
+            let s1 = n1.toString();
+            let s2 = n2.toString();
+            let passosTxt = "Passo 1:\nMultiplicamos dígito por dígito da direita para a esquerda:\n";
+
+            let maxLen = Math.max(s1.length, s2.length) + 4;
+            let p1Armada = s1.padStart(maxLen, ' ');
+            let p2Armada = "x" + s2.padStart(maxLen - 1, ' ');
+            let linha = "-".repeat(maxLen);
+            
+            let arr2 = s2.split('').reverse().map(Number);
+            let parciais = [];
+
+            for (let i = 0; i < arr2.length; i++) {
+                let mult = n1 * arr2[i];
+                parciais.push(mult);
+                passosTxt += `• ${arr2[i]} x ${n1} = ${mult}\n`;
+            }
+
+            let displayConta = `${p1Armada}\n${p2Armada}\n${linha}\n`;
+            
+            for(let i = 0; i < parciais.length; i++) {
+                let zerosFinais = " ".repeat(i);
+                let strParcial = parciais[i].toString() + zerosFinais;
+                displayConta += strParcial.padStart(maxLen, ' ') + "\n";
+            }
+
+            if(parciais.length > 1) {
+                displayConta += `${linha}\n${(n1*n2).toString().padStart(maxLen, ' ')}\n`;
+                passosTxt += `\nPasso 2:\nSomamos os resultados parciais deslocando as casas para a esquerda.\n\n`;
+            }
+
+            return `${displayConta}\n${passosTxt}Resultado = ${n1 * n2}`;
+        }
+
+        function rodarDivisao(n1, n2) {
+            if (n2 === 0) return "Erro: Não é possível dividir por zero.";
+            
+            let quociente = Math.floor(n1 / n2);
+            let resto = n1 % n2;
+
+            let log = `Conta Armada:\n\n ${n1} | ${n2}\n`;
+            log += `     |---\n`;
+            log += `     | ${quociente}\n\n`;
+            log += `Passo 1:\n`;
+            log += `Verificamos quantas vezes o ${n2} cabe inteiro dentro de ${n1}.\n`;
+            log += `${n2} x ${quociente} = ${n2 * quociente}.\n\n`;
+            log += `Passo 2:\n`;
+            log += `Subtraímos para encontrar o resto final:\n`;
+            log += `${n1} - ${n2 * quociente} = ${resto}.\n\n`;
+            
+            return `${log}Resultado Inteiro = ${quociente}\nResto = ${resto}`;
+        }
+    </script>
+</body>
+</html>
